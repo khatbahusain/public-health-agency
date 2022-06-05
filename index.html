@@ -1,0 +1,132 @@
+<html>
+
+<head>
+
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
+    <py-env>
+        - matplotlib
+        - pandas
+        - plotly
+    </py-env>
+</head>
+
+<body>
+    <div class="jumbotron">
+        <h1>Préparez des données pour un organisme de santé publique</h1>
+        <p class="lead">
+            Some graphs about the weather in London in 2020
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-2 p-2 ml-4 mb-1">
+            <button type="button" class="btn btn-secondary">Select chart from list:</button>
+        </div>
+        <div class="col-sm-4 p-2 mr-4 mb-1">
+            <select class="form-control" id="select">
+
+                <py-script>
+                ls = ['energy_100g', 'proteins_100g', 'salt_100g', 'sodium_100g', 'sugars_100g', 'fat_100g', 'carbohydrates_100g', 'saturated-fat_100g', 'fiber_100g', 'cholesterol_100g', 'trans-fat_100g', 'calcium_100g', 'vitamin-c_100g', 'iron_100g', 'vitamin-a_100g']
+                    <option value="energy_100g">energy_100g</option>
+                    <option value="proteins_100g">proteins_100g</option>
+                    <option value="salt_100g">salt_100g</option>
+                    <option value="sodium_100g">sodium_100g</option>
+                    <option value="sugars_100g">sugars_100g</option>
+                    <option value="fat_100g">fat_100g</option>
+                    <option value="carbohydrates_100g">carbohydrates_100g</option>
+                    <option value="saturated-fat_100g">saturated-fat_100g</option>
+                    <option value="fiber_100g">fiber_100g</option>
+                    <option value="cholesterol_100g">cholesterol_100g</option>
+                    <option value="trans-fat_100g">trans-fat_100g</option>
+                    <option value="calcium_100g">calcium_100g</option>
+                    <option value="vitamin-c_100g">vitamin-c_100g</option>
+                    <option value="iron_100g">iron_100g</option>
+                    <option value="vitamin-a_100g">vitamin-a_100g</option>
+                    
+
+
+                    
+                </py-script>
+                
+   
+            
+            </select>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-6 p-2 shadow ml-4 mr-4 mb-4 bg-white rounded">
+            <div id="chart1"></div>
+        </div>
+    </div>
+
+
+    <script type='text/javascript'>
+        function plot(graph, chart) {
+            var figure = JSON.parse(graph)
+            Plotly.newPlot(chart, figure, {});
+        }
+    </script>
+
+    <py-script>
+        # Import libraries
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        import js
+        import json
+        import plotly
+        import plotly.express as px
+
+        ## Get the data
+        from pyodide.http import open_url
+        
+        url = 'https://raw.githubusercontent.com/alanjones2/uk-historical-weather/main/data/Heathrow.csv'
+        url_content = open_url(url)
+
+
+        url_2 = 'https://raw.githubusercontent.com/khatbahusain/public-health-agency/main/cleaned_data.csv'
+        url_content_2 = open_url(url_2)
+        df_2 = pd.read_csv(url_content_2)
+
+
+        df = pd.read_csv(url_content)
+        df = df[df['Year']==2020]
+
+
+        
+
+        def plot(chart):
+            fig = px.box(df_2, y=chart,
+            width=800, height=400)
+            graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+            js.plot(graphJSON,"chart1")
+                    
+                        
+        from js import document
+        from pyodide import create_proxy
+
+        def selectChange(event):
+            choice = document.getElementById("select").value
+            plot(choice)
+
+        def setup():
+            # Create a JsProxy for the callback function
+            change_proxy = create_proxy(selectChange)
+
+            e = document.getElementById("select")
+            e.addEventListener("change", change_proxy)
+
+        setup()
+
+        plot('energy_100g')
+    </py-script>
+</body>
+
+</html>
+
